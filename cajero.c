@@ -57,6 +57,34 @@ int autenticar() {
     return -1;
 }
 
+/*
+ * Funcion: consultarSaldo
+ * Muestra el saldo actual del usuario autenticado.
+ */
+void consultarSaldo(int indice) {
+    printf("\n=================================\n");
+    printf("         CONSULTA DE SALDO       \n");
+    printf("=================================\n");
+    printf("Usuario: %s\n", usuarios[indice].usuario);
+    printf("Saldo disponible: $%.2f\n", usuarios[indice].saldo);
+}
+
+/*
+ * Funcion: mostrarMenu
+ * Muestra las opciones disponibles del cajero.
+ */
+void mostrarMenu() {
+    printf("\n=================================\n");
+    printf("            MENU PRINCIPAL       \n");
+    printf("=================================\n");
+    printf("1. Consultar saldo\n");
+    printf("2. Depositar\n");
+    printf("3. Retirar\n");
+    printf("4. Salir\n");
+    printf("=================================\n");
+    printf("Seleccione una opcion: ");
+}
+
 int main() {
     int indice = autenticar();
 
@@ -64,7 +92,30 @@ int main() {
         return 0;
     }
 
-    printf("\n[Menu (proximamente)]\n");
+    int opcion;
+
+    do {
+        mostrarMenu();
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                consultarSaldo(indice);
+                break;
+            case 2:
+                printf("\n[Deposito (proximamente)]\n");
+                break;
+            case 3:
+                printf("\n[Retiro (proximamente)]\n");
+                break;
+            case 4:
+                printf("\nCerrando sesion. Hasta luego.\n");
+                break;
+            default:
+                printf("\nOpcion invalida. Intente de nuevo.\n");
+        }
+
+    } while (opcion != 4);
 
     return 0;
 }
