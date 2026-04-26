@@ -4,6 +4,7 @@
 #define MAX_USUARIOS 4
 #define MAX_INTENTOS 3
 #define MONTO_MINIMO 1.00
+#define MAX_HISTORIAL 50
 
 // Estructura que representa una cuenta bancaria
 typedef struct {
@@ -12,6 +13,13 @@ typedef struct {
     float saldo;
 } Cuenta;
 
+// Estructura que representa una transaccion realizada
+typedef struct {
+    char tipo[20];
+    float monto;
+    float saldoResultante;
+} Transaccion;
+
 // Usuarios registrados en el sistema con sus saldos iniciales
 Cuenta usuarios[MAX_USUARIOS] = {
     {"admin",   "1234",   5000.00},
@@ -19,6 +27,47 @@ Cuenta usuarios[MAX_USUARIOS] = {
     {"maria",   "pass1",  800.00},
     {"carlos",  "qwerty", 3400.75}
 };
+
+// Arreglo que almacena el historial de transacciones de la sesion
+Transaccion historial[MAX_HISTORIAL];
+int totalTransacciones = 0;
+
+/*
+ * Funcion: registrarTransaccion
+ * Guarda una transaccion en el historial de la sesion.
+ * Parametros: tipo (Deposito/Retiro), monto y saldo resultante.
+ */
+void registrarTransaccion(char tipo[], float monto, float saldoResultante) {
+    if (totalTransacciones < MAX_HISTORIAL) {
+        strcpy(historial[totalTransacciones].tipo, tipo);
+        historial[totalTransacciones].monto = monto;
+        historial[totalTransacciones].saldoResultante = saldoResultante;
+        totalTransacciones++;
+    }
+}
+
+/*
+ * Funcion: mostrarHistorial
+ * Muestra todas las transacciones realizadas durante la sesion.
+ */
+void mostrarHistorial() {
+    printf("\n=================================\n");
+    printf("      HISTORIAL DE SESION        \n");
+    printf("=================================\n");
+
+    if (totalTransacciones == 0) {
+        printf("No se realizaron transacciones en esta sesion.\n");
+        return;
+    }
+
+    for (int i = 0; i < totalTransacciones; i++) {
+        printf("%d. %s - Monto: $%.2f | Saldo resultante: $%.2f\n",
+            i + 1,
+            historial[i].tipo,
+            historial[i].monto,
+            historial[i].saldoResultante);
+    }
+}
 
 /*
  * Funcion: autenticar
@@ -90,6 +139,7 @@ void depositar(int indice) {
 
     usuarios[indice].saldo += monto;
     printf("\nDeposito exitoso. Nuevo saldo: $%.2f\n", usuarios[indice].saldo);
+    registrarTransaccion("Deposito", monto, usuarios[indice].saldo);
 }
 
 /*
@@ -117,6 +167,7 @@ void retirar(int indice) {
 
     usuarios[indice].saldo -= monto;
     printf("\nRetiro exitoso. Nuevo saldo: $%.2f\n", usuarios[indice].saldo);
+    registrarTransaccion("Retiro", monto, usuarios[indice].saldo);
 }
 
 /*
@@ -159,6 +210,7 @@ int main() {
                 retirar(indice);
                 break;
             case 4:
+                mostrarHistorial();
                 printf("\nCerrando sesion. Hasta luego.\n");
                 break;
             default:
