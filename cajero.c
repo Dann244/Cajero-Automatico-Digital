@@ -3,6 +3,7 @@
 
 #define MAX_USUARIOS 4
 #define MAX_INTENTOS 3
+#define MONTO_MINIMO 1.00
 
 // Estructura que representa una cuenta bancaria
 typedef struct {
@@ -70,6 +71,55 @@ void consultarSaldo(int indice) {
 }
 
 /*
+ * Funcion: depositar
+ * Solicita un monto y lo agrega al saldo del usuario.
+ * Valida que el monto sea mayor al minimo permitido.
+ */
+void depositar(int indice) {
+    float monto;
+    printf("\n=================================\n");
+    printf("            DEPOSITO             \n");
+    printf("=================================\n");
+    printf("Ingrese el monto a depositar: $");
+    scanf("%f", &monto);
+
+    if (monto < MONTO_MINIMO) {
+        printf("\nError: El monto minimo de deposito es $%.2f\n", MONTO_MINIMO);
+        return;
+    }
+
+    usuarios[indice].saldo += monto;
+    printf("\nDeposito exitoso. Nuevo saldo: $%.2f\n", usuarios[indice].saldo);
+}
+
+/*
+ * Funcion: retirar
+ * Solicita un monto y lo descuenta del saldo del usuario.
+ * Valida que haya fondos suficientes y que el monto sea valido.
+ */
+void retirar(int indice) {
+    float monto;
+    printf("\n=================================\n");
+    printf("             RETIRO              \n");
+    printf("=================================\n");
+    printf("Ingrese el monto a retirar: $");
+    scanf("%f", &monto);
+
+    if (monto <= 0) {
+        printf("\nError: El monto debe ser mayor a cero.\n");
+        return;
+    }
+
+    if (monto > usuarios[indice].saldo) {
+        printf("\nError: Fondos insuficientes. Saldo disponible: $%.2f\n", usuarios[indice].saldo);
+        return;
+    }
+
+    usuarios[indice].saldo -= monto;
+    printf("\nRetiro exitoso. Nuevo saldo: $%.2f\n", usuarios[indice].saldo);
+}
+
+/*
  * Funcion: mostrarMenu
  * Muestra las opciones disponibles del cajero.
  */
@@ -103,10 +153,10 @@ int main() {
                 consultarSaldo(indice);
                 break;
             case 2:
-                printf("\n[Deposito (proximamente)]\n");
+                depositar(indice);
                 break;
             case 3:
-                printf("\n[Retiro (proximamente)]\n");
+                retirar(indice);
                 break;
             case 4:
                 printf("\nCerrando sesion. Hasta luego.\n");
