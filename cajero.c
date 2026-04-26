@@ -1,19 +1,39 @@
+/*
+ * =============================================
+ *        CAJERO AUTOMATICO DIGITAL
+ * =============================================
+ * Sistema que simula el funcionamiento basico
+ * de un cajero automatico. Permite autenticar
+ * usuarios, consultar saldo, depositar, retirar
+ * y visualizar el historial de la sesion.
+ * =============================================
+ */
+
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_USUARIOS 4
-#define MAX_INTENTOS 3
-#define MONTO_MINIMO 1.00
-#define MAX_HISTORIAL 50
+// Constantes del sistema
+#define MAX_USUARIOS     4      // Numero de usuarios registrados
+#define MAX_INTENTOS     3      // Intentos maximos de login
+#define MONTO_MINIMO     1.00   // Monto minimo para depositar
+#define MAX_HISTORIAL    50     // Maximo de transacciones por sesion
 
-// Estructura que representa una cuenta bancaria
+/*
+ * Estructura: Cuenta
+ * Representa a un usuario registrado en el sistema.
+ * Campos: nombre de usuario, contrasena y saldo disponible.
+ */
 typedef struct {
     char usuario[20];
     char contrasena[20];
     float saldo;
 } Cuenta;
 
-// Estructura que representa una transaccion realizada
+/*
+ * Estructura: Transaccion
+ * Representa una operacion realizada durante la sesion.
+ * Campos: tipo de operacion, monto y saldo resultante.
+ */
 typedef struct {
     char tipo[20];
     float monto;
@@ -28,14 +48,17 @@ Cuenta usuarios[MAX_USUARIOS] = {
     {"carlos",  "qwerty", 3400.75}
 };
 
-// Arreglo que almacena el historial de transacciones de la sesion
+// Historial de transacciones de la sesion activa
 Transaccion historial[MAX_HISTORIAL];
 int totalTransacciones = 0;
 
 /*
  * Funcion: registrarTransaccion
  * Guarda una transaccion en el historial de la sesion.
- * Parametros: tipo (Deposito/Retiro), monto y saldo resultante.
+ * Parametros:
+ *   - tipo: "Deposito" o "Retiro"
+ *   - monto: cantidad operada
+ *   - saldoResultante: saldo despues de la operacion
  */
 void registrarTransaccion(char tipo[], float monto, float saldoResultante) {
     if (totalTransacciones < MAX_HISTORIAL) {
@@ -49,6 +72,7 @@ void registrarTransaccion(char tipo[], float monto, float saldoResultante) {
 /*
  * Funcion: mostrarHistorial
  * Muestra todas las transacciones realizadas durante la sesion.
+ * Si no hay transacciones, informa al usuario.
  */
 void mostrarHistorial() {
     printf("\n=================================\n");
@@ -71,8 +95,9 @@ void mostrarHistorial() {
 
 /*
  * Funcion: autenticar
- * Solicita usuario y contrasena, valida contra los registrados.
- * Permite un maximo de 3 intentos antes de bloquear el acceso.
+ * Solicita usuario y contrasena al usuario.
+ * Valida las credenciales contra los usuarios registrados.
+ * Permite un maximo de MAX_INTENTOS antes de bloquear el acceso.
  * Retorna el indice del usuario autenticado, o -1 si falla.
  */
 int autenticar() {
@@ -89,6 +114,7 @@ int autenticar() {
         printf("Contrasena: ");
         scanf("%s", contrasena);
 
+        // Recorre todos los usuarios buscando coincidencia
         for (int i = 0; i < MAX_USUARIOS; i++) {
             if (strcmp(usuarios[i].usuario, usuario) == 0 &&
                 strcmp(usuarios[i].contrasena, contrasena) == 0) {
@@ -109,7 +135,8 @@ int autenticar() {
 
 /*
  * Funcion: consultarSaldo
- * Muestra el saldo actual del usuario autenticado.
+ * Muestra el nombre de usuario y saldo disponible del usuario autenticado.
+ * Parametros: indice del usuario en el array de cuentas.
  */
 void consultarSaldo(int indice) {
     printf("\n=================================\n");
@@ -121,8 +148,10 @@ void consultarSaldo(int indice) {
 
 /*
  * Funcion: depositar
- * Solicita un monto y lo agrega al saldo del usuario.
- * Valida que el monto sea mayor al minimo permitido.
+ * Solicita un monto al usuario y lo suma al saldo de su cuenta.
+ * Valida que el monto sea mayor o igual al minimo permitido.
+ * Registra la operacion en el historial si es exitosa.
+ * Parametros: indice del usuario en el array de cuentas.
  */
 void depositar(int indice) {
     float monto;
@@ -132,6 +161,7 @@ void depositar(int indice) {
     printf("Ingrese el monto a depositar: $");
     scanf("%f", &monto);
 
+    // Validar monto minimo
     if (monto < MONTO_MINIMO) {
         printf("\nError: El monto minimo de deposito es $%.2f\n", MONTO_MINIMO);
         return;
@@ -144,8 +174,10 @@ void depositar(int indice) {
 
 /*
  * Funcion: retirar
- * Solicita un monto y lo descuenta del saldo del usuario.
- * Valida que haya fondos suficientes y que el monto sea valido.
+ * Solicita un monto al usuario y lo resta del saldo de su cuenta.
+ * Valida que el monto sea mayor a cero y que haya fondos suficientes.
+ * Registra la operacion en el historial si es exitosa.
+ * Parametros: indice del usuario en el array de cuentas.
  */
 void retirar(int indice) {
     float monto;
@@ -155,11 +187,13 @@ void retirar(int indice) {
     printf("Ingrese el monto a retirar: $");
     scanf("%f", &monto);
 
+    // Validar que el monto sea positivo
     if (monto <= 0) {
         printf("\nError: El monto debe ser mayor a cero.\n");
         return;
     }
 
+    // Validar fondos suficientes
     if (monto > usuarios[indice].saldo) {
         printf("\nError: Fondos insuficientes. Saldo disponible: $%.2f\n", usuarios[indice].saldo);
         return;
@@ -172,7 +206,7 @@ void retirar(int indice) {
 
 /*
  * Funcion: mostrarMenu
- * Muestra las opciones disponibles del cajero.
+ * Imprime en pantalla las opciones disponibles del cajero.
  */
 void mostrarMenu() {
     printf("\n=================================\n");
@@ -186,7 +220,13 @@ void mostrarMenu() {
     printf("Seleccione una opcion: ");
 }
 
+/*
+ * Funcion principal: main
+ * Punto de entrada del programa.
+ * Gestiona el flujo general: autenticacion y menu principal.
+ */
 int main() {
+    // Autenticar al usuario antes de permitir el acceso
     int indice = autenticar();
 
     if (indice == -1) {
@@ -195,6 +235,7 @@ int main() {
 
     int opcion;
 
+    // Mantener el menu activo hasta que el usuario elija salir
     do {
         mostrarMenu();
         scanf("%d", &opcion);
